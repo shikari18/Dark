@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dark - AI Assistant</title>
+    <link rel="icon" href="Logo[1].jpg" />
     <style>
       * {
         margin: 0;
@@ -715,7 +716,7 @@
         font-size: 12px;
       }
 
-      /* Input Area */
+      /* Input Area - This is the section that will be moved up on mobile */
       .input-area {
         padding: 20px;
         border-top: 1px solid #2a2a2a;
@@ -1262,8 +1263,8 @@
         /* ADJUST CHAT MESSAGES FOR MOBILE */
         .chat-messages {
           padding: 12px;
-          padding-bottom: 100px; /* MOVED UP 20px - was 120px */
-          max-height: calc(100vh - 140px);
+          padding-bottom: 60px; /* MOVED UP 60px - was 120px */
+          max-height: calc(100vh - 100px);
           overflow-y: auto;
         }
 
@@ -1293,10 +1294,21 @@
         }
 
         /* ADJUST INPUT AREA PADDING - Reduced to move input higher */
+        /* This is the main section that controls the input area position */
         .input-area {
-          padding: 6px 12px 10px; /* MOVED UP - reduced top and bottom padding */
-          position: relative;
+          padding: 5px 12px 5px; /* MOVED UP - significantly reduced top and bottom padding */
+          position: fixed;
+          bottom: 6pc;
+          left: 0;
+          right: 0;
+          background: #1a1a1a;
           z-index: 10;
+          border-top: 1px solid #2a2a2a;
+        }
+
+        body.light-mode .input-area {
+          background: #f5f5f5;
+          border-top: 1px solid #e0e0e0;
         }
 
         .input-container {
@@ -1370,11 +1382,12 @@
       @media (max-width: 375px) and (max-height: 667px) {
         .chat-messages {
           padding: 10px;
-          padding-bottom: 80px; /* Adjusted for iPhone 5 - MOVED UP */
+          padding-bottom: 50px; /* Adjusted for iPhone 5 - MOVED UP */
         }
 
         .input-area {
-          padding: 4px 10px 8px; /* Further reduced for iPhone 5 - MOVED UP */
+          padding: 3px 10px 3px; /* Further reduced for iPhone 5 - MOVED UP */
+          bottom: 5pc;
         }
 
         .tool-btn {
@@ -1430,11 +1443,11 @@
 
         /* ADJUST FOR VERY SMALL SCREENS - Increase to move input even higher */
         .chat-messages {
-          padding-bottom: 110px; /* MOVED UP - was 130px */
+          padding-bottom: 50px; /* MOVED UP - was 130px */
         }
 
         .input-area {
-          padding: 6px 10px 8px; /* MOVED UP - further reduced padding */
+          padding: 3px 10px 3px; /* MOVED UP - further reduced padding */
         }
       }
 
@@ -1534,6 +1547,25 @@
         border: 1px solid #d0d0d0;
         color: #333;
       }
+
+      /* Disabled input area */
+      .input-area.disabled {
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      .input-area.disabled .input-container {
+        background: #2a2a2a;
+      }
+
+      .input-area.disabled #messageInput {
+        color: #888;
+      }
+
+      .input-area.disabled .tool-btn {
+        opacity: 0.5;
+        pointer-events: none;
+      }
     </style>
   </head>
   <body>
@@ -1601,7 +1633,8 @@
           </div>
         </div>
 
-        <div class="input-area">
+        <!-- Input Area - This section is moved up on mobile -->
+        <div class="input-area" id="inputArea">
           <div class="input-container">
             <div class="input-tools" id="inputTools">
               <button
@@ -1749,7 +1782,6 @@
           </div>
 
           <div class="danger-zone">
-            <h3 style="color: #c00">Danger Zone</h3>
             <button class="danger-btn" onclick="deleteAccount()">
               Delete Account
             </button>
@@ -1850,8 +1882,6 @@
     </div>
 
     <script>
-      // All JavaScript code remains exactly the same as in the previous version
-      // Only the CSS has been modified for the positioning adjustments
       const greetingResponses = {
         hello: "Hello! How can I assist you today?",
         hi: "Hi there! What can I help you with?",
@@ -2006,6 +2036,7 @@ It's full.`;
       let currentTypingPosition = 0;
       let renameChatId = null;
       let deleteChatId = null;
+      let isInputDisabled = false;
 
       // Check if user has seen the animation before
       function hasSeenAnimation() {
@@ -2089,9 +2120,8 @@ It's full.`;
         // Reset message count to allow new messages
         messageCount = 0;
 
-        // Re-enable send button if it was disabled
-        const sendBtn = document.getElementById("sendBtn");
-        sendBtn.disabled = false;
+        // Re-enable input area
+        enableInputArea();
 
         // Show welcome message
         document.getElementById("chatMessages").innerHTML = `
@@ -2182,7 +2212,7 @@ It's full.`;
         const input = document.getElementById("messageInput");
         const sendBtn = document.getElementById("sendBtn");
 
-        if (input.value.trim()) {
+        if (input.value.trim() && !isInputDisabled) {
           sendBtn.classList.add("active");
         } else {
           sendBtn.classList.remove("active");
@@ -2194,6 +2224,8 @@ It's full.`;
       }
 
       function sendMessage() {
+        if (isInputDisabled) return;
+
         const input = document.getElementById("messageInput");
         const message = input.value.trim();
 
@@ -2923,6 +2955,33 @@ It's full.`;
           document.getElementById("chatMessages").scrollHeight;
       }
 
+      // Disable input area when sign-in prompt is shown
+      function disableInputArea() {
+        const inputArea = document.getElementById("inputArea");
+        const messageInput = document.getElementById("messageInput");
+        const sendBtn = document.getElementById("sendBtn");
+
+        isInputDisabled = true;
+        inputArea.classList.add("disabled");
+        messageInput.placeholder = "Please sign in to continue chatting...";
+        messageInput.disabled = true;
+        sendBtn.classList.remove("active");
+        sendBtn.disabled = true;
+      }
+
+      // Enable input area when user signs in
+      function enableInputArea() {
+        const inputArea = document.getElementById("inputArea");
+        const messageInput = document.getElementById("messageInput");
+        const sendBtn = document.getElementById("sendBtn");
+
+        isInputDisabled = false;
+        inputArea.classList.remove("disabled");
+        messageInput.placeholder = "Message Dark...";
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+      }
+
       function showSignInPrompt() {
         const chatMessages = document.getElementById("chatMessages");
         const signInPrompt = document.createElement("div");
@@ -2934,9 +2993,8 @@ It's full.`;
         chatMessages.appendChild(signInPrompt);
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        // Disable send button
-        document.getElementById("sendBtn").classList.remove("active");
-        document.getElementById("sendBtn").disabled = true;
+        // Disable input area completely
+        disableInputArea();
       }
 
       // Settings functions
@@ -3115,6 +3173,9 @@ It's full.`;
               "userAvatar"
             ).innerHTML = `<img src="${user.avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%;">`;
           }
+
+          // Enable input area if user is logged in
+          enableInputArea();
         }
 
         // Update UI based on login status
