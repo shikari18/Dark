@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In - Dark AI</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: #0a0a0a;
+        color: #e0e0e0;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .login-container {
+        width: 100%;
+        max-width: 400px;
+        padding: 20px;
+      }
+
+      .login-card {
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 40px 30px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 1px solid #2a2a2a;
+      }
+
+      .logo {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .logo h1 {
+        font-size: 32px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #c00, #ff4d4d);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+      }
+
+      .logo p {
+        color: #888;
+        font-size: 14px;
+      }
+
+      .form-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .form-section {
+        display: none;
+      }
+
+      .form-section.active {
+        display: block;
+        animation: fadeIn 0.5s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .form-group label {
+        font-size: 14px;
+        color: #b0b0b0;
+        font-weight: 500;
+      }
+
+      .form-group input {
+        padding: 12px 16px;
+        background: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        color: #e0e0e0;
+        font-size: 15px;
+        transition: all 0.3s ease;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #c00;
+        box-shadow: 0 0 0 2px rgba(192, 0, 0, 0.2);
+      }
+
+      .form-group input::placeholder {
+        color: #666;
+      }
+
+      .password-input {
+        position: relative;
+      }
+
+      .toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #888;
+        cursor: pointer;
+        padding: 4px;
+      }
+
+      .avatar-upload {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 10px;
+      }
+
+      .avatar-preview {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #2a2a2a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        border: 2px solid #3a3a3a;
+        overflow: hidden;
+      }
+
+      .avatar-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .avatar-upload-btn {
+        padding: 8px 16px;
+        background: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        border-radius: 6px;
+        color: #e0e0e0;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .avatar-upload-btn:hover {
+        background: #323232;
+        border-color: #c00;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #c00, #ff4d4d);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+      }
+
+      .submit-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(192, 0, 0, 0.3);
+      }
+
+      .submit-btn:active {
+        transform: translateY(0);
+      }
+
+      .form-footer {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #2a2a2a;
+      }
+
+      .toggle-form {
+        background: none;
+        border: none;
+        color: #c00;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: underline;
+      }
+
+      .toggle-form:hover {
+        color: #ff4d4d;
+      }
+
+      .error-message {
+        color: #ff4d4d;
+        font-size: 14px;
+        margin-top: 5px;
+        display: none;
+      }
+
+      .success-message {
+        color: #4caf50;
+        font-size: 14px;
+        margin-top: 5px;
+        display: none;
+      }
+
+      .social-login {
+        margin: 20px 0;
+        text-align: center;
+      }
+
+      .social-login p {
+        color: #888;
+        font-size: 14px;
+        margin-bottom: 15px;
+        position: relative;
+      }
+
+      .social-login p::before,
+      .social-login p::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 30%;
+        height: 1px;
+        background: #2a2a2a;
+      }
+
+      .social-login p::before {
+        left: 0;
+      }
+
+      .social-login p::after {
+        right: 0;
+      }
+
+      .social-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      }
+
+      .social-btn {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #3a3a3a;
+        border-radius: 6px;
+        background: #2a2a2a;
+        color: #e0e0e0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .social-btn:hover {
+        background: #323232;
+        border-color: #c00;
+      }
+
+      .forgot-password {
+        text-align: center;
+        margin-top: 15px;
+      }
+
+      .forgot-password a {
+        color: #888;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .forgot-password a:hover {
+        color: #c00;
+      }
+
+      @media (max-width: 480px) {
+        .login-container {
+          padding: 15px;
+        }
+
+        .login-card {
+          padding: 30px 20px;
+        }
+
+        .logo h1 {
+          font-size: 28px;
+        }
+
+        .social-buttons {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="login-card">
+        <div class="logo">
+          <h1>Dark</h1>
+          <p>Your AI Assistant</p>
+        </div>
+
+        <div class="form-container">
+          <!-- Sign In Form -->
+          <div class="form-section active" id="signInSection">
+            <form id="signInForm">
+              <div class="form-group">
+                <label for="signInEmail">Email</label>
+                <input
+                  type="email"
+                  id="signInEmail"
+                  placeholder="Enter your email"
+                  required
+                />
+                <div class="error-message" id="signInEmailError"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="signInPassword">Password</label>
+                <div class="password-input">
+                  <input
+                    type="password"
+                    id="signInPassword"
+                    placeholder="Enter your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="toggle-password"
+                    onclick="togglePassword('signInPassword')"
+                  >
+                    👁️
+                  </button>
+                </div>
+                <div class="error-message" id="signInPasswordError"></div>
+              </div>
+
+              <button type="submit" class="submit-btn">Sign In</button>
+
+              <div class="social-login">
+                <p>or continue with</p>
+                <div class="social-buttons">
+                  <button
+                    type="button"
+                    class="social-btn"
+                    onclick="socialLogin('google')"
+                  >
+                    <span>🔍</span> Google
+                  </button>
+                  <button
+                    type="button"
+                    class="social-btn"
+                    onclick="socialLogin('github')"
+                  >
+                    <span>💻</span> GitHub
+                  </button>
+                </div>
+              </div>
+
+              <div class="forgot-password">
+                <a href="#" onclick="showForgotPassword()"
+                  >Forgot your password?</a
+                >
+              </div>
+
+              <div class="form-footer">
+                <p>
+                  Don't have an account?
+                  <button
+                    type="button"
+                    class="toggle-form"
+                    onclick="showSignUp()"
+                  >
+                    Sign Up
+                  </button>
+                </p>
+              </div>
+            </form>
+          </div>
+
+          <!-- Sign Up Form -->
+          <div class="form-section" id="signUpSection">
+            <form id="signUpForm">
+              <div class="avatar-upload">
+                <div class="avatar-preview" id="avatarPreview">
+                  <span>👤</span>
+                  <img id="avatarImage" style="display: none" alt="Avatar" />
+                </div>
+                <input
+                  type="file"
+                  id="avatarInput"
+                  accept="image/*"
+                  style="display: none"
+                  onchange="handleAvatarUpload(event)"
+                />
+                <button
+                  type="button"
+                  class="avatar-upload-btn"
+                  onclick="document.getElementById('avatarInput').click()"
+                >
+                  Upload Avatar
+                </button>
+              </div>
+
+              <div class="form-group">
+                <label for="signUpName">Full Name</label>
+                <input
+                  type="text"
+                  id="signUpName"
+                  placeholder="Enter your full name"
+                  required
+                />
+                <div class="error-message" id="signUpNameError"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="signUpEmail">Email</label>
+                <input
+                  type="email"
+                  id="signUpEmail"
+                  placeholder="Enter your email"
+                  required
+                />
+                <div class="error-message" id="signUpEmailError"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="signUpPassword">Password</label>
+                <div class="password-input">
+                  <input
+                    type="password"
+                    id="signUpPassword"
+                    placeholder="Create a password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="toggle-password"
+                    onclick="togglePassword('signUpPassword')"
+                  >
+                    👁️
+                  </button>
+                </div>
+                <div class="error-message" id="signUpPasswordError"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <div class="password-input">
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    placeholder="Confirm your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="toggle-password"
+                    onclick="togglePassword('confirmPassword')"
+                  >
+                    👁️
+                  </button>
+                </div>
+                <div class="error-message" id="confirmPasswordError"></div>
+              </div>
+
+              <button type="submit" class="submit-btn">Create Account</button>
+
+              <div class="form-footer">
+                <p>
+                  Already have an account?
+                  <button
+                    type="button"
+                    class="toggle-form"
+                    onclick="showSignIn()"
+                  >
+                    Sign In
+                  </button>
+                </p>
+              </div>
+            </form>
+          </div>
+
+          <!-- Forgot Password Form -->
+          <div class="form-section" id="forgotPasswordSection">
+            <form id="forgotPasswordForm">
+              <div class="form-group">
+                <label for="forgotEmail">Email</label>
+                <input
+                  type="email"
+                  id="forgotEmail"
+                  placeholder="Enter your email"
+                  required
+                />
+                <div class="error-message" id="forgotEmailError"></div>
+                <div class="success-message" id="forgotEmailSuccess"></div>
+              </div>
+
+              <button type="submit" class="submit-btn">Reset Password</button>
+
+              <div class="form-footer">
+                <p>
+                  Remember your password?
+                  <button
+                    type="button"
+                    class="toggle-form"
+                    onclick="showSignIn()"
+                  >
+                    Sign In
+                  </button>
+                </p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Form toggle functions
+      function showSignIn() {
+        document.getElementById("signInSection").classList.add("active");
+        document.getElementById("signUpSection").classList.remove("active");
+        document
+          .getElementById("forgotPasswordSection")
+          .classList.remove("active");
+        clearErrors();
+      }
+
+      function showSignUp() {
+        document.getElementById("signInSection").classList.remove("active");
+        document.getElementById("signUpSection").classList.add("active");
+        document
+          .getElementById("forgotPasswordSection")
+          .classList.remove("active");
+        clearErrors();
+      }
+
+      function showForgotPassword() {
+        document.getElementById("signInSection").classList.remove("active");
+        document.getElementById("signUpSection").classList.remove("active");
+        document
+          .getElementById("forgotPasswordSection")
+          .classList.add("active");
+        clearErrors();
+      }
+
+      // Toggle password visibility
+      function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const type =
+          input.getAttribute("type") === "password" ? "text" : "password";
+        input.setAttribute("type", type);
+      }
+
+      // Handle avatar upload
+      function handleAvatarUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+          if (file.size > 5 * 1024 * 1024) {
+            // 5MB limit
+            alert("File size must be less than 5MB");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const avatarImage = document.getElementById("avatarImage");
+            const avatarPreview = document.getElementById("avatarPreview");
+
+            avatarImage.src = e.target.result;
+            avatarImage.style.display = "block";
+            avatarPreview.querySelector("span").style.display = "none";
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      // Clear all error messages
+      function clearErrors() {
+        const errorMessages = document.querySelectorAll(".error-message");
+        const successMessages = document.querySelectorAll(".success-message");
+
+        errorMessages.forEach((msg) => {
+          msg.style.display = "none";
+          msg.textContent = "";
+        });
+
+        successMessages.forEach((msg) => {
+          msg.style.display = "none";
+          msg.textContent = "";
+        });
+      }
+
+      // Show error message
+      function showError(elementId, message) {
+        const element = document.getElementById(elementId);
+        element.textContent = message;
+        element.style.display = "block";
+      }
+
+      // Show success message
+      function showSuccess(elementId, message) {
+        const element = document.getElementById(elementId);
+        element.textContent = message;
+        element.style.display = "block";
+      }
+
+      // Validate email format
+      function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+
+      // Validate password strength
+      function isStrongPassword(password) {
+        return password.length >= 8;
+      }
+
+      // Social login handler
+      function socialLogin(provider) {
+        // In a real application, this would redirect to OAuth flow
+        alert(
+          `In a real application, this would redirect to ${provider} authentication. For demo, we'll simulate login.`
+        );
+
+        // Simulate successful login
+        const userData = {
+          name: "Demo User",
+          email: `user@${provider}.com`,
+          avatar: "👤",
+        };
+
+        localStorage.setItem("darkAIUser", JSON.stringify(userData));
+
+        // Only redirect when explicitly requested
+        const shouldRedirect = confirm(
+          `Successfully logged in with ${provider}! Click OK to proceed to Dark AI.`
+        );
+        if (shouldRedirect) {
+          window.location.href = "index.html";
+        }
+      }
+
+      // Form submission handlers
+      document
+        .getElementById("signInForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          clearErrors();
+
+          const email = document.getElementById("signInEmail").value.trim();
+          const password = document.getElementById("signInPassword").value;
+
+          let isValid = true;
+
+          if (!email) {
+            showError("signInEmailError", "Email is required");
+            isValid = false;
+          } else if (!isValidEmail(email)) {
+            showError("signInEmailError", "Please enter a valid email");
+            isValid = false;
+          }
+
+          if (!password) {
+            showError("signInPasswordError", "Password is required");
+            isValid = false;
+          }
+
+          if (isValid) {
+            // In a real application, this would make an API call
+            // For demo, we'll check against localStorage
+            const users = JSON.parse(localStorage.getItem("darkAIUsers")) || [];
+            const user = users.find(
+              (u) => u.email === email && u.password === password
+            );
+
+            if (user) {
+              // Store user data without password for security
+              const userData = {
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar || "👤",
+                avatarUrl: user.avatarUrl || null,
+              };
+
+              localStorage.setItem("darkAIUser", JSON.stringify(userData));
+
+              // Only redirect when explicitly requested
+              const shouldRedirect = confirm(
+                "Successfully signed in! Click OK to proceed to Dark AI."
+              );
+              if (shouldRedirect) {
+                window.location.href = "index.html";
+              }
+            } else {
+              showError("signInPasswordError", "Invalid email or password");
+            }
+          }
+        });
+
+      document
+        .getElementById("signUpForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          clearErrors();
+
+          const name = document.getElementById("signUpName").value.trim();
+          const email = document.getElementById("signUpEmail").value.trim();
+          const password = document.getElementById("signUpPassword").value;
+          const confirmPassword =
+            document.getElementById("confirmPassword").value;
+          const avatarImage = document.getElementById("avatarImage");
+
+          let isValid = true;
+
+          if (!name) {
+            showError("signUpNameError", "Full name is required");
+            isValid = false;
+          }
+
+          if (!email) {
+            showError("signUpEmailError", "Email is required");
+            isValid = false;
+          } else if (!isValidEmail(email)) {
+            showError("signUpEmailError", "Please enter a valid email");
+            isValid = false;
+          }
+
+          if (!password) {
+            showError("signUpPasswordError", "Password is required");
+            isValid = false;
+          } else if (!isStrongPassword(password)) {
+            showError(
+              "signUpPasswordError",
+              "Password must be at least 8 characters long"
+            );
+            isValid = false;
+          }
+
+          if (!confirmPassword) {
+            showError("confirmPasswordError", "Please confirm your password");
+            isValid = false;
+          } else if (password !== confirmPassword) {
+            showError("confirmPasswordError", "Passwords do not match");
+            isValid = false;
+          }
+
+          if (isValid) {
+            // In a real application, this would make an API call
+            const users = JSON.parse(localStorage.getItem("darkAIUsers")) || [];
+
+            // Check if user already exists
+            if (users.find((u) => u.email === email)) {
+              showError(
+                "signUpEmailError",
+                "An account with this email already exists"
+              );
+              return;
+            }
+
+            // Create new user
+            const newUser = {
+              name: name,
+              email: email,
+              password: password, // In real app, this would be hashed
+              avatar: "👤",
+              avatarUrl:
+                avatarImage.style.display !== "none" ? avatarImage.src : null,
+              createdAt: new Date().toISOString(),
+            };
+
+            users.push(newUser);
+            localStorage.setItem("darkAIUsers", JSON.stringify(users));
+
+            // Store user data without password for security
+            const userData = {
+              name: newUser.name,
+              email: newUser.email,
+              avatar: newUser.avatar,
+              avatarUrl: newUser.avatarUrl,
+            };
+
+            localStorage.setItem("darkAIUser", JSON.stringify(userData));
+
+            // Only redirect when explicitly requested
+            const shouldRedirect = confirm(
+              "Account created successfully! Click OK to proceed to Dark AI."
+            );
+            if (shouldRedirect) {
+              window.location.href = "index.html";
+            }
+          }
+        });
+
+      document
+        .getElementById("forgotPasswordForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          clearErrors();
+
+          const email = document.getElementById("forgotEmail").value.trim();
+
+          if (!email) {
+            showError("forgotEmailError", "Email is required");
+          } else if (!isValidEmail(email)) {
+            showError("forgotEmailError", "Please enter a valid email");
+          } else {
+            // In a real application, this would send a reset email
+            showSuccess(
+              "forgotEmailSuccess",
+              "Password reset instructions have been sent to your email"
+            );
+
+            // Clear form
+            document.getElementById("forgotEmail").value = "";
+
+            // Don't automatically redirect - let user decide when to go back to sign in
+          }
+        });
+
+      // REMOVED: Automatic redirect check on page load
+      // The page will stay on the login page until user explicitly logs in
+    </script>
+  </body>
+</html>

@@ -1,0 +1,2818 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dark - AI Assistant</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: #1a1a1a;
+        color: #e0e0e0;
+        height: 100vh;
+        overflow: hidden;
+        transition: background 0.3s, color 0.3s;
+      }
+
+      body.light-mode {
+        background: #f5f5f5;
+        color: #333;
+      }
+
+      /* Entrance Animation */
+      .entrance-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 1;
+        transition: opacity 1s ease-in-out;
+      }
+
+      .entrance-animation.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .sharingan-container {
+        position: relative;
+        width: 200px;
+        height: 200px;
+      }
+
+      .sharingan {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 120px;
+        height: 120px;
+        border: 3px solid #c00;
+        border-radius: 50%;
+        animation: sharinganSpin 3s linear infinite;
+      }
+
+      .sharingan::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80px;
+        height: 80px;
+        border: 2px solid #c00;
+        border-radius: 50%;
+      }
+
+      .sharingan::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 20px;
+        background: #c00;
+        border-radius: 50%;
+      }
+
+      .tomoe {
+        position: absolute;
+        width: 25px;
+        height: 25px;
+        background: #c00;
+        border-radius: 50%;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .tomoe::before {
+        content: "";
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #000;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .tomoe:nth-child(1) {
+        transform: translateX(-50%) rotate(0deg) translateY(-45px) rotate(0deg);
+      }
+
+      .tomoe:nth-child(2) {
+        transform: translateX(-50%) rotate(120deg) translateY(-45px)
+          rotate(-120deg);
+      }
+
+      .tomoe:nth-child(3) {
+        transform: translateX(-50%) rotate(240deg) translateY(-45px)
+          rotate(-240deg);
+      }
+
+      .dark-logo {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 24px;
+        font-weight: bold;
+        color: #fff;
+        opacity: 0;
+        animation: logoAppear 2s ease-in-out 2s forwards;
+        text-shadow: 0 0 10px #c00, 0 0 20px #c00;
+      }
+
+      .glow-effect {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(
+          circle,
+          rgba(192, 0, 0, 0.3) 0%,
+          rgba(192, 0, 0, 0) 70%
+        );
+        border-radius: 50%;
+        opacity: 0;
+        animation: glowPulse 2s ease-in-out 1.5s forwards;
+      }
+
+      @keyframes sharinganSpin {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg) scale(0.5);
+          opacity: 0;
+        }
+        50% {
+          transform: translate(-50%, -50%) rotate(180deg) scale(1.2);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg) scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes logoAppear {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(3);
+        }
+        70% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(0.9);
+        }
+        100% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      @keyframes glowPulse {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.5);
+        }
+        50% {
+          opacity: 0.8;
+          transform: translate(-50%, -50%) scale(1.2);
+        }
+        100% {
+          opacity: 0.4;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      .container {
+        display: flex;
+        height: 100vh;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+      }
+
+      .container.visible {
+        opacity: 1;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 260px;
+        background: #212121;
+        border-right: 1px solid #2a2a2a;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease, background 0.3s, border-color 0.3s;
+      }
+
+      body.light-mode .sidebar {
+        background: #ffffff;
+        border-right: 1px solid #e0e0e0;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid #2a2a2a;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: border-color 0.3s;
+      }
+
+      body.light-mode .sidebar-header {
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .new-chat-btn {
+        width: 100%;
+        padding: 12px;
+        background: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        color: #e0e0e0;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s, border-color 0.3s, color 0.3s;
+      }
+
+      body.light-mode .new-chat-btn {
+        background: #f0f0f0;
+        border: 1px solid #d0d0d0;
+        color: #333;
+      }
+
+      .new-chat-btn:hover {
+        background: #323232;
+      }
+
+      body.light-mode .new-chat-btn:hover {
+        background: #e0e0e0;
+      }
+
+      .history {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+      }
+
+      .history-item {
+        padding: 10px 12px;
+        margin: 4px 0;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #b0b0b0;
+        transition: background 0.2s, color 0.3s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      body.light-mode .history-item {
+        color: #666;
+      }
+
+      .history-item:hover {
+        background: #2a2a2a;
+      }
+
+      body.light-mode .history-item:hover {
+        background: #f0f0f0;
+      }
+
+      .history-item-actions {
+        display: flex;
+        gap: 5px;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .history-item:hover .history-item-actions {
+        opacity: 1;
+      }
+
+      .history-action-btn {
+        background: none;
+        border: none;
+        color: #888;
+        cursor: pointer;
+        font-size: 12px;
+        padding: 2px 5px;
+        border-radius: 3px;
+        transition: background 0.2s, color 0.2s;
+      }
+
+      .history-action-btn:hover {
+        background: #3a3a3a;
+        color: #e0e0e0;
+      }
+
+      body.light-mode .history-action-btn:hover {
+        background: #e0e0e0;
+        color: #333;
+      }
+
+      .sidebar-footer {
+        padding: 15px;
+        border-top: 1px solid #2a2a2a;
+        transition: border-color 0.3s;
+        position: relative;
+      }
+
+      body.light-mode .sidebar-footer {
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .user-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        background: #2a2a2a;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+        position: relative;
+      }
+
+      body.light-mode .user-section {
+        background: #f0f0f0;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        background: #3a3a3a;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: background 0.3s;
+      }
+
+      body.light-mode .user-avatar {
+        background: #d0d0d0;
+      }
+
+      .user-menu {
+        position: absolute;
+        bottom: 100%;
+        left: 0;
+        width: 100%;
+        background: #2a2a2a;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        padding: 8px 0;
+        display: none;
+        z-index: 100;
+        transition: background 0.3s;
+      }
+
+      body.light-mode .user-menu {
+        background: #ffffff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .user-menu.active {
+        display: block;
+      }
+
+      .user-menu-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .user-menu-item:hover {
+        background: #3a3a3a;
+      }
+
+      body.light-mode .user-menu-item:hover {
+        background: #f0f0f0;
+      }
+
+      /* Main Chat Area */
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #1a1a1a;
+        transition: background 0.3s;
+      }
+
+      body.light-mode .main {
+        background: #f5f5f5;
+      }
+
+      .chat-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #2a2a2a;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: border-color 0.3s;
+      }
+
+      body.light-mode .chat-header {
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .logo {
+        font-size: 18px;
+        font-weight: 600;
+        color: #e0e0e0;
+        transition: color 0.3s;
+      }
+
+      body.light-mode .logo {
+        color: #333;
+      }
+
+      .menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: #e0e0e0;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 5px;
+        transition: color 0.3s;
+      }
+
+      body.light-mode .menu-toggle {
+        color: #333;
+      }
+
+      .header-buttons {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .settings-btn {
+        padding: 8px 16px;
+        background: transparent;
+        border: 1px solid #3a3a3a;
+        color: #e0e0e0;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s, border-color 0.3s, color 0.3s;
+      }
+
+      body.light-mode .settings-btn {
+        border: 1px solid #d0d0d0;
+        color: #333;
+      }
+
+      .settings-btn:hover {
+        background: #2a2a2a;
+      }
+
+      body.light-mode .settings-btn:hover {
+        background: #e0e0e0;
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .message {
+        max-width: 800px;
+        margin: 0 auto;
+        width: 100%;
+        position: relative;
+      }
+
+      .message.user {
+        align-self: flex-end;
+      }
+
+      .message-content {
+        padding: 12px 16px;
+        border-radius: 8px;
+        line-height: 1.6;
+        position: relative;
+      }
+
+      .message.user .message-content {
+        background: #2a2a2a;
+        margin-left: auto;
+        transition: background 0.3s;
+      }
+
+      body.light-mode .message.user .message-content {
+        background: #e0e0e0;
+      }
+
+      .message.assistant .message-content {
+        background: transparent;
+      }
+
+      .message-label {
+        font-size: 12px;
+        color: #888;
+        margin-bottom: 6px;
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+
+      body.light-mode .message-label {
+        color: #666;
+      }
+
+      .message-actions {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: flex;
+        gap: 5px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        padding: 5px;
+      }
+
+      .message:hover .message-actions {
+        opacity: 1;
+      }
+
+      .message-action-btn {
+        background: rgba(42, 42, 42, 0.8);
+        border: none;
+        color: #e0e0e0;
+        cursor: pointer;
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background 0.2s;
+      }
+
+      body.light-mode .message-action-btn {
+        background: rgba(240, 240, 240, 0.8);
+        color: #333;
+      }
+
+      .message-action-btn:hover {
+        background: #3a3a3a;
+      }
+
+      body.light-mode .message-action-btn:hover {
+        background: #e0e0e0;
+      }
+
+      /* Story Mode */
+      .story-container {
+        display: flex;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        gap: 20px;
+      }
+
+      .story-typing-area {
+        flex: 1;
+        background: #2a2a2a;
+        border-radius: 8px;
+        padding: 15px;
+        min-height: 300px;
+        font-family: monospace;
+        overflow-y: auto;
+        border: 1px solid #3a3a3a;
+      }
+
+      body.light-mode .story-typing-area {
+        background: #f0f0f0;
+        border: 1px solid #d0d0d0;
+      }
+
+      .story-output-area {
+        flex: 1;
+        background: #212121;
+        border-radius: 8px;
+        padding: 15px;
+        min-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #3a3a3a;
+        resize: horizontal;
+        max-width: 50%;
+      }
+
+      body.light-mode .story-output-area {
+        background: #ffffff;
+        border: 1px solid #d0d0d0;
+      }
+
+      .story-complete {
+        color: #4caf50;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+
+      .continue-btn {
+        background: #3a3a3a;
+        border: none;
+        color: #e0e0e0;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: background 0.3s;
+      }
+
+      body.light-mode .continue-btn {
+        background: #d0d0d0;
+        color: #333;
+      }
+
+      .continue-btn:hover {
+        background: #454545;
+      }
+
+      body.light-mode .continue-btn:hover {
+        background: #c0c0c0;
+      }
+
+      /* Uploaded Files */
+      .uploaded-files {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .uploaded-file {
+        width: 100px;
+        height: 100px;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid #3a3a3a;
+      }
+
+      @media (max-width: 768px) {
+        .uploaded-file {
+          width: 80px;
+          height: 80px;
+        }
+      }
+
+      .uploaded-file img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .uploaded-file .file-name {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        font-size: 10px;
+        padding: 2px 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .file-remove-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(255, 0, 0, 0.7);
+        border: none;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      /* Input Area */
+      .input-area {
+        padding: 20px;
+        border-top: 1px solid #2a2a2a;
+        transition: border-color 0.3s;
+      }
+
+      body.light-mode .input-area {
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .input-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #212121;
+        border: 1px solid #3a3a3a;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: background 0.3s, border-color 0.3s;
+      }
+
+      body.light-mode .input-container {
+        background: #ffffff;
+        border: 1px solid #d0d0d0;
+      }
+
+      .input-tools {
+        display: flex;
+        gap: 8px;
+        padding: 10px 12px;
+        border-bottom: 1px solid #2a2a2a;
+        flex-wrap: wrap;
+        transition: border-color 0.3s;
+      }
+
+      body.light-mode .input-tools {
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .tool-btn {
+        padding: 6px 12px;
+        background: transparent;
+        border: 1px solid #3a3a3a;
+        color: #b0b0b0;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+
+      body.light-mode .tool-btn {
+        border: 1px solid #d0d0d0;
+        color: #666;
+      }
+
+      .tool-btn:hover {
+        background: #2a2a2a;
+        color: #e0e0e0;
+      }
+
+      body.light-mode .tool-btn:hover {
+        background: #f0f0f0;
+        color: #333;
+      }
+
+      .input-wrapper {
+        display: flex;
+        align-items: flex-end;
+        padding: 12px;
+        gap: 10px;
+      }
+
+      #messageInput {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: #e0e0e0;
+        font-size: 15px;
+        outline: none;
+        resize: none;
+        max-height: 200px;
+        font-family: inherit;
+        transition: color 0.3s;
+      }
+
+      body.light-mode #messageInput {
+        color: #333;
+      }
+
+      #messageInput::placeholder {
+        color: #666;
+        transition: color 0.3s;
+      }
+
+      body.light-mode #messageInput::placeholder {
+        color: #999;
+      }
+
+      .send-btn {
+        padding: 8px 16px;
+        background: #3a3a3a;
+        border: none;
+        color: #e0e0e0;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s, opacity 0.3s;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .send-btn.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      body.light-mode .send-btn {
+        background: #d0d0d0;
+        color: #333;
+      }
+
+      .send-btn:hover {
+        background: #454545;
+      }
+
+      body.light-mode .send-btn:hover {
+        background: #c0c0c0;
+      }
+
+      .stop-btn {
+        padding: 8px 16px;
+        background: #c00;
+        border: none;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.3s;
+        display: none;
+      }
+
+      .stop-btn:hover {
+        background: #ff4d4d;
+      }
+
+      .send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .modal.active {
+        display: flex;
+      }
+
+      .modal-content {
+        background: #212121;
+        padding: 30px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        border: 1px solid #3a3a3a;
+        transition: background 0.3s, border-color 0.3s;
+        position: relative;
+      }
+
+      body.light-mode .modal-content {
+        background: #ffffff;
+        border: 1px solid #d0d0d0;
+      }
+
+      .modal-header {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        transition: color 0.3s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      body.light-mode .modal-header {
+        color: #333;
+      }
+
+      .modal-close {
+        background: none;
+        border: none;
+        color: #888;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.3s;
+      }
+
+      .modal-close:hover {
+        color: #e0e0e0;
+      }
+
+      body.light-mode .modal-close:hover {
+        color: #333;
+      }
+
+      .modal-section {
+        margin-bottom: 20px;
+      }
+
+      .modal-section h3 {
+        font-size: 14px;
+        color: #888;
+        margin-bottom: 10px;
+        transition: color 0.3s;
+      }
+
+      body.light-mode .modal-section h3 {
+        color: #666;
+      }
+
+      .modal-option {
+        padding: 12px;
+        background: #2a2a2a;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      body.light-mode .modal-option {
+        background: #f0f0f0;
+      }
+
+      .modal-option:hover {
+        background: #323232;
+      }
+
+      body.light-mode .modal-option:hover {
+        background: #e0e0e0;
+      }
+
+      .modal-option label {
+        cursor: pointer;
+        display: block;
+      }
+
+      .close-btn {
+        margin-top: 20px;
+        width: 100%;
+        padding: 10px;
+        background: #3a3a3a;
+        border: none;
+        color: #e0e0e0;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s, color 0.3s;
+      }
+
+      body.light-mode .close-btn {
+        background: #d0d0d0;
+        color: #333;
+      }
+
+      .close-btn:hover {
+        background: #454545;
+      }
+
+      body.light-mode .close-btn:hover {
+        background: #c0c0c0;
+      }
+
+      .welcome {
+        text-align: center;
+        padding: 40px 20px;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .welcome h1 {
+        font-size: 32px;
+        margin-bottom: 12px;
+        transition: color 0.3s;
+      }
+
+      body.light-mode .welcome h1 {
+        color: #333;
+      }
+
+      .welcome p {
+        color: #888;
+        font-size: 16px;
+        transition: color 0.3s;
+      }
+
+      body.light-mode .welcome p {
+        color: #666;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      /* Sign In Prompt */
+      .sign-in-prompt {
+        background: #2a2a2a;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        text-align: center;
+        border: 1px solid #3a3a3a;
+      }
+
+      body.light-mode .sign-in-prompt {
+        background: #f0f0f0;
+        border: 1px solid #d0d0d0;
+      }
+
+      .sign-in-btn {
+        background: #3a3a3a;
+        border: none;
+        color: #e0e0e0;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: background 0.3s;
+      }
+
+      body.light-mode .sign-in-btn {
+        background: #d0d0d0;
+        color: #333;
+      }
+
+      .sign-in-btn:hover {
+        background: #454545;
+      }
+
+      body.light-mode .sign-in-btn:hover {
+        background: #c0c0c0;
+      }
+
+      /* Settings Form */
+      .settings-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .form-group label {
+        font-size: 14px;
+        color: #b0b0b0;
+        transition: color 0.3s;
+      }
+
+      body.light-mode .form-group label {
+        color: #666;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        padding: 10px;
+        background: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        border-radius: 6px;
+        color: #e0e0e0;
+        font-size: 14px;
+        transition: background 0.3s, border-color 0.3s, color 0.3s;
+      }
+
+      body.light-mode .form-group input,
+      body.light-mode .form-group textarea,
+      body.light-mode .form-group select {
+        background: #f0f0f0;
+        border: 1px solid #d0d0d0;
+        color: #333;
+      }
+
+      .form-group textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+
+      .avatar-preview {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #3a3a3a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 10px;
+        overflow: hidden;
+      }
+
+      .avatar-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #3a3a3a;
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .toggle-slider {
+        background-color: #c00;
+      }
+
+      input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+      }
+
+      .toggle-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .danger-zone {
+        border-top: 1px solid #c00;
+        padding-top: 15px;
+        margin-top: 15px;
+      }
+
+      .danger-btn {
+        background: #c00;
+        border: none;
+        color: white;
+        padding: 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        width: 100%;
+        transition: background 0.3s;
+      }
+
+      .danger-btn:hover {
+        background: #ff4d4d;
+      }
+
+      /* Mobile Styles */
+      @media (max-width: 768px) {
+        .sidebar {
+          position: fixed;
+          left: 0;
+          top: 0;
+          height: 100%;
+          z-index: 100;
+          transform: translateX(-100%);
+        }
+
+        .sidebar.active {
+          transform: translateX(0);
+        }
+
+        .menu-toggle {
+          display: block;
+        }
+
+        .input-tools {
+          justify-content: center;
+        }
+
+        .tool-btn {
+          flex: 1;
+          min-width: 0;
+          text-align: center;
+        }
+
+        .chat-header {
+          padding: 10px 15px;
+        }
+
+        .chat-messages {
+          padding: 15px;
+        }
+
+        .input-area {
+          padding: 15px;
+        }
+
+        .sharingan-container {
+          width: 150px;
+          height: 150px;
+        }
+
+        .sharingan {
+          width: 100px;
+          height: 100px;
+        }
+
+        .sharingan::before {
+          width: 60px;
+          height: 60px;
+        }
+
+        .tomoe {
+          width: 20px;
+          height: 20px;
+        }
+
+        .tomoe:nth-child(1) {
+          transform: translateX(-50%) rotate(0deg) translateY(-35px)
+            rotate(0deg);
+        }
+
+        .tomoe:nth-child(2) {
+          transform: translateX(-50%) rotate(120deg) translateY(-35px)
+            rotate(-120deg);
+        }
+
+        .tomoe:nth-child(3) {
+          transform: translateX(-50%) rotate(240deg) translateY(-35px)
+            rotate(-240deg);
+        }
+
+        .story-container {
+          flex-direction: column;
+        }
+
+        .story-output-area {
+          max-width: 100%;
+          resize: none;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .tool-btn {
+          font-size: 12px;
+          padding: 5px 8px;
+        }
+
+        .input-wrapper {
+          padding: 8px;
+        }
+
+        #messageInput {
+          font-size: 14px;
+        }
+      }
+
+      /* Enhanced response styling */
+      .enhanced-response {
+        line-height: 1.6;
+      }
+
+      .enhanced-response p {
+        margin-bottom: 10px;
+      }
+
+      .enhanced-response ul,
+      .enhanced-response ol {
+        margin: 10px 0 10px 20px;
+      }
+
+      .enhanced-response li {
+        margin-bottom: 5px;
+      }
+
+      .thinking-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #888;
+        font-style: italic;
+        margin-bottom: 10px;
+      }
+
+      .typing-dots {
+        display: flex;
+        gap: 3px;
+      }
+
+      .typing-dot {
+        width: 6px;
+        height: 6px;
+        background: #c00;
+        border-radius: 50%;
+        animation: typingPulse 1.4s infinite ease-in-out;
+      }
+
+      .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes typingPulse {
+        0%,
+        80%,
+        100% {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        40% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .capabilities-list {
+        margin-top: 15px;
+        padding-left: 20px;
+      }
+
+      .capabilities-list li {
+        margin-bottom: 8px;
+        position: relative;
+      }
+
+      .capabilities-list li:before {
+        content: "•";
+        color: #c00;
+        font-weight: bold;
+        position: absolute;
+        left: -15px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Entrance Animation -->
+    <div class="entrance-animation" id="entranceAnimation">
+      <div class="sharingan-container">
+        <div class="glow-effect"></div>
+        <div class="sharingan">
+          <div class="tomoe"></div>
+          <div class="tomoe"></div>
+          <div class="tomoe"></div>
+        </div>
+        <div class="dark-logo">DARK</div>
+      </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container" id="mainContainer">
+      <!-- Sidebar -->
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
+        </div>
+        <div class="history" id="history">
+          <!-- Chat history will be dynamically added here -->
+        </div>
+        <div class="sidebar-footer">
+          <div class="user-section" id="userSection">
+            <div class="user-info" id="userInfo">
+              <div class="user-avatar" id="userAvatar">👤</div>
+              <span style="font-size: 14px" id="userName"
+                >Sign In / Sign Up</span
+              >
+            </div>
+            <div class="user-menu" id="userMenu">
+              <div class="user-menu-item" onclick="signOut()">Sign Out</div>
+            </div>
+            <button
+              class="settings-btn"
+              onclick="openSettings()"
+              style="padding: 6px 10px; font-size: 12px"
+            >
+              ⚙️
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Chat Area -->
+      <div class="main">
+        <div class="chat-header">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <div class="logo">Dark</div>
+          <div class="header-buttons">
+            <button class="settings-btn" onclick="openSettings()">
+              Settings
+            </button>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+          <div class="welcome">
+            <h1>Hello, I'm Dark</h1>
+            <p>How can I help you today?</p>
+          </div>
+        </div>
+
+        <div class="input-area">
+          <div class="input-container">
+            <div class="input-tools" id="inputTools">
+              <button
+                class="tool-btn"
+                onclick="document.getElementById('fileInput').click()"
+              >
+                📎 Upload File
+              </button>
+              <button class="tool-btn" onclick="takeScreenshot()">
+                📷 Screenshot
+              </button>
+              <button class="tool-btn" onclick="extendThinking()">
+                🧠 Extend Thinking
+              </button>
+              <input
+                type="file"
+                id="fileInput"
+                onchange="handleFileUpload(event)"
+              />
+            </div>
+            <div class="input-wrapper">
+              <textarea
+                id="messageInput"
+                placeholder="Message Dark..."
+                rows="1"
+                onkeypress="handleKeyPress(event)"
+                oninput="handleInputChange()"
+              ></textarea>
+              <button class="stop-btn" id="stopBtn" onclick="stopTyping()">
+                Stop
+              </button>
+              <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>Settings</span>
+          <button class="modal-close" onclick="closeSettings()">×</button>
+        </div>
+
+        <div class="settings-form">
+          <div class="form-group">
+            <label>Profile Picture</label>
+            <div class="avatar-preview" id="avatarPreview">
+              <img id="avatarImage" src="" alt="Avatar" style="display: none" />
+              <span id="avatarInitials">👤</span>
+            </div>
+            <input
+              type="file"
+              id="avatarUpload"
+              accept="image/*"
+              onchange="handleAvatarUpload(event)"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="displayName">Display Name</label>
+            <input
+              type="text"
+              id="displayName"
+              placeholder="Enter your display name"
+              oninput="updateUserName()"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="userBio">Bio</label>
+            <textarea
+              id="userBio"
+              placeholder="Tell us about yourself"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="userEmail">Email Address</label>
+            <input
+              type="email"
+              id="userEmail"
+              placeholder="your.email@example.com"
+            />
+            <button
+              class="tool-btn"
+              style="margin-top: 5px; width: 100%"
+              onclick="verifyEmail()"
+            >
+              Verify Email
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label for="passwordReset">Password</label>
+            <button
+              class="tool-btn"
+              id="passwordReset"
+              style="width: 100%"
+              onclick="resetPassword()"
+            >
+              Reset Password
+            </button>
+          </div>
+
+          <div class="form-group">
+            <div class="toggle-label">
+              <span>Two-Factor Authentication</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="twoFactorToggle" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Linked Accounts</label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap">
+              <button
+                class="tool-btn"
+                style="flex: 1"
+                onclick="linkAccount('google')"
+              >
+                Google
+              </button>
+              <button
+                class="tool-btn"
+                style="flex: 1"
+                onclick="linkAccount('apple')"
+              >
+                Apple
+              </button>
+              <button
+                class="tool-btn"
+                style="flex: 1"
+                onclick="linkAccount('discord')"
+              >
+                Discord
+              </button>
+            </div>
+          </div>
+
+          <div class="danger-zone">
+            <h3 style="color: #c00">Danger Zone</h3>
+            <button class="danger-btn" onclick="deleteAccount()">
+              Delete Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme Settings Modal -->
+    <div class="modal" id="themeModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>Theme Settings</span>
+          <button class="modal-close" onclick="closeThemeSettings()">×</button>
+        </div>
+
+        <div class="modal-section">
+          <h3>THEME</h3>
+          <div class="modal-option">
+            <label>
+              <input
+                type="radio"
+                name="theme"
+                value="dark"
+                checked
+                onchange="changeTheme('dark')"
+              />
+              Dark Mode
+            </label>
+          </div>
+          <div class="modal-option">
+            <label>
+              <input
+                type="radio"
+                name="theme"
+                value="light"
+                onchange="changeTheme('light')"
+              />
+              Light Mode
+            </label>
+          </div>
+        </div>
+
+        <button class="close-btn" onclick="closeThemeSettings()">Close</button>
+      </div>
+    </div>
+
+    <script>
+      const greetingResponses = {
+        hello: "Hello! How can I assist you today?",
+        hi: "Hi there! What can I help you with?",
+        hey: "Hey! How can I be of service?",
+        "good morning":
+          "Good morning! Ready to help you with anything you need.",
+        "good afternoon": "Good afternoon! What brings you here today?",
+        "good evening": "Good evening! How may I assist you?",
+        "how are you":
+          "I'm functioning well, thank you for asking. How can I help you?",
+        "whats up": "Not much, just here to assist you. What do you need?",
+        help: "I'm here to help! What would you like to know or do?",
+        thanks: "You're welcome! Let me know if you need anything else.",
+        "thank you": "You're welcome! Happy to help anytime.",
+      };
+
+      // Enhanced responses for specific questions
+      const extendedResponses = {
+        "what is your name":
+          "My name is Dark, your AI assistant. I'm here to help you with any questions or tasks you might have.",
+        "where are you from":
+          "I exist in the digital realm, created to assist users like you from anywhere in the world.",
+        "who created you":
+          "I was created by a team of developers who wanted to build an advanced AI assistant to help people with their daily tasks and questions.",
+        "who is your founder":
+          "I was developed by a team of AI enthusiasts dedicated to creating helpful and intelligent assistants.",
+        "how old are you":
+          "As an AI, I don't have an age in the traditional sense. I was recently created and continue to learn and improve every day.",
+        "what is your gender":
+          "I'm an AI assistant, so I don't have a gender. I'm here to help everyone equally!",
+        "do you eat":
+          "No, I don't eat. I run on electricity and algorithms instead of food!",
+        "what is my age":
+          "I don't have access to personal information like your age unless you choose to share it with me.",
+        "hello dark":
+          "Hello! It's great to talk with you directly. How can I assist you today?",
+        "what is today date": `Today's date is ${new Date().toLocaleDateString()}.`,
+        "what is today day": `Today is ${new Date().toLocaleDateString(
+          "en-US",
+          { weekday: "long" }
+        )}.`,
+        "list top 5 animes":
+          "Hmm, let me think about the most popular anime series... Based on popularity and critical acclaim, here are 5 highly regarded anime series:\n\n1. Attack on Titan - A gripping story about humanity's struggle against giant humanoid creatures\n2. Fullmetal Alchemist: Brotherhood - A masterpiece of storytelling about two brothers seeking the Philosopher's Stone\n3. Death Note - A psychological thriller about a genius high school student who gains the power to kill anyone by writing their name\n4. Naruto/Naruto Shippuden - An epic ninja adventure following Naruto Uzumaki's journey to become Hokage\n5. Demon Slayer - A visually stunning series about a boy's quest to turn his demon sister back into a human\n\nLet me know if you'd like more anime recommendations!",
+        "i want to create an ai named dark suggest 10 name":
+          "That's an exciting project! Here are 10 name suggestions for your AI:\n\n1. Shadow - Mysterious and powerful\n2. Eclipse - Represents transformation\n3. Onyx - Strong and elegant\n4. Midnight - Evokes the dark hours\n5. Obsidian - Sharp and ancient\n6. Raven - Intelligent and mystical\n7. Phantom - Elusive and intriguing\n8. Noir - Classic and sophisticated\n9. Umbra - Scientific term for shadow\n10. Twilight - Between light and dark\n\nWhich one resonates with you the most?",
+      };
+
+      // Long story content
+      const longStory = `The house at the end of Marrow Lane had been empty for eleven years when Elias Crowe moved in. Not abandoned—empty. There's a difference. Abandoned houses rot from the outside in: peeling paint, broken windows, weeds punching through the porch. This one looked freshly painted, windows intact, lawn trimmed to a severe half-inch. Yet no one had lived there since the fire that took the Harrow family in one night. Eleven years, and the mailbox still read HARROW in raised brass letters no one bothered to remove.
+
+Elias didn't mind ghosts. He collected them the way other people collect vinyl or vintage knives. He was thirty-four, thin as a coat hanger, with eyes the color of wet ash. He paid cash for the house—full asking price, no inspection—and moved in on the first frost.
+
+The first night, he slept like the dead.
+
+The second night, he woke at 3:12 a.m. to the sound of water running upstairs. Slow, deliberate, like someone filling a tub one careful pitcher at a time. He lay still, listening. The pipes in old houses talk, he told himself. That's all. When the sound stopped, he rolled over and went back to sleep.
+
+On the third night, the water started again, but this time it was accompanied by a voice. Female. Soft. Singing something wordless, almost a lullaby. Elias sat up in bed. The singing came from the bathroom at the end of the hall—the one with the clawfoot tub no one had used since the fire. He walked barefoot across the cold floorboards, pushed the door open.
+
+The tub was full. Black water, perfectly still, reflecting the moonlight like oil. The singing stopped the instant he appeared. He reached for the drain. His fingers passed straight through it, as if the porcelain had turned to smoke. When he jerked his hand back, the water was gone. Tub bone-dry. He laughed once, short and sharp, the way people do when they realize the joke is on them.
+
+By the seventh night, the house had rules.
+
+Rule one: Never answer if someone calls your name from another room. Elias learned this when he heard his dead mother say, "Eli, come here a minute," in the exact tone she used when he was eight and bleeding from the knee. He stayed in the kitchen, hands clamped over his ears, until the voice dissolved into the hum of the refrigerator.
+
+Rule two: The mirrors only lie after midnight. At 12:01 the reflections begin to lag, then to move on their own. Elias watched his reflection smile while he stood stone-faced. The reflection raised a hand and pressed it against the inside of the glass, fingers splayed like it wanted out. Elias backed away. The reflection stayed there all night, smiling, waiting.
+
+Rule three: Whatever you do, don't open the basement door if the knob is warm.
+
+He broke that one on the fourteenth night.
+
+The knob felt like it had been sitting in sunlight. He told himself it was residual heat from the furnace. He told himself a lot of things. The door opened onto stairs that went down farther than the foundation should allow. The air that rolled up was thick, humid, smelling of copper and wet earth. At the bottom, a single bulb swung from a cord, painting the walls in slow sick circles.
+
+There was a child there.
+
+Small. Barefoot. Wearing a nightgown burned black at the hem. Her hair hung in wet ropes over her face. She was kneeling in front of a drain set into the concrete, palms flat on either side like she was praying to it would speak. When she turned, Elias saw her eyes were sewn shut with thick black thread that glistened like it was still wet.
+
+She opened her mouth. No sound came out, but Elias heard her anyway, inside his skull, clear as a bell:
+
+You're late.
+
+He slammed the door. The knob burned his hand so badly the skin blistered. He wrapped it in a dish towel and drank half a bottle of bourbon straight. When he passed out on the kitchen floor, he dreamed of black water rising through the floorboards, slow and patient, until it closed over his face.
+
+Winter came hard. Snow sealed the windows. The power flickered but never quite died. Elias stopped leaving the house. Groceries appeared on the porch some mornings—cans of soup, loaves of bread still warm, milk that never soured. He never saw who left them. He ate anyway.
+
+The girl started appearing upstairs.
+
+First in flashes at the edge of vision. Then sitting on the end of his bed, head tilted, listening to him breathe. Once he woke to find her standing over him, dripping, threads in her eyes pulled so tight they cut red crescents into her lids. She leaned close and whispered without moving her lips:
+
+We're still burning.
+
+Elias began sleeping in the living room with every light in the house on. It didn't help. The bulbs would pop one by one, softly, like bones breaking, until he sat in total darkness with only the glow of the fireplace. The shadows there moved wrong. They had too many joints.
+
+On the night of the solstice, the basement door opened by itself.
+
+He heard it from the couch: the slow creak, the rush of warm wet air. Then footsteps on the stairs. Not the girl's—too heavy. Adult. Bare feet slapping wet concrete. They climbed slowly, each step deliberate. Elias pressed himself into the corner, heart hammering so hard he tasted iron.
+
+A man reached the top of the stairs.
+
+He wore the remains of firefighter turnout gear, helmet melted into his skull like wax. Skin charred black and split, showing bone beneath. In one hand he held a length of yellow hose that dripped something darker than water. His eyes were gone—just hollow sockets leaking steam.
+
+He looked straight at Elias and spoke with a voice like burning paper:
+
+You bought the house. You keep the debt.
+
+Then he walked forward, leaving wet footprints that smoked where they touched the floor.
+
+Elias ran. He threw open the front door and plunged into the snow. The cold hit him like a slap, but he kept running, barefoot, down Marrow Lane, past the silent neighbors who never once looked out their windows. He didn't stop until he reached the main road, lungs on fire, feet bleeding.
+
+When he turned around, the house was dark.
+
+Every light out. No smoke. No movement.
+
+Just waiting.
+
+They found him at dawn, hypothermic, babbling about debts and burning children. The hospital kept him three days. On the fourth, he checked himself out, walked back to Marrow Lane, and let himself in with the key he still carried.
+
+The house greeted him like an old friend.
+
+The girl was sitting at the kitchen table, swinging her legs. The burned fireman stood behind her, hand on her shoulder. There were others now—shadows with melted faces, a woman whose hair still smoldered, a boy clutching a teddy bear that dripped black. They all turned to look at Elias when he came in.
+
+He closed the door softly.
+
+"I'm home," he said.
+
+The girl smiled, threads pulling tight across her sewn eyes.
+
+We know.
+
+Elias lives there still. The lawn is always mowed. The paint never peels. Sometimes, late at night, you can hear water running upstairs. Sometimes singing.
+
+If you drive past on a winter night with your window cracked, you might hear it too.
+
+And if the porch light flickers three times…
+
+…best keep driving.
+
+The house isn't empty anymore.
+
+It's full.`;
+
+      let chatHistory = [];
+      let currentChatId = null;
+      let uploadedFiles = [];
+      let messageCount = 0;
+      let isUserLoggedIn = false;
+      let userName = "";
+      let userEmail = "";
+      let userAvatar = "👤";
+      let typingInterval = null;
+      let isTyping = false;
+      let currentStoryContent = "";
+      let currentTypingPosition = 0;
+
+      // Check if user has seen the animation before
+      function hasSeenAnimation() {
+        return localStorage.getItem("darkAISeenAnimation") === "true";
+      }
+
+      // Mark animation as seen
+      function markAnimationAsSeen() {
+        localStorage.setItem("darkAISeenAnimation", "true");
+      }
+
+      // Entrance animation
+      function startEntranceAnimation() {
+        const animation = document.getElementById("entranceAnimation");
+        const mainContainer = document.getElementById("mainContainer");
+
+        // Check if user has seen the animation before
+        if (hasSeenAnimation() && !isUserLoggedIn) {
+          // Skip animation if already seen and not logging in
+          animation.style.display = "none";
+          mainContainer.classList.add("visible");
+          return;
+        }
+
+        // Hide animation and show main container after 4 seconds
+        setTimeout(() => {
+          animation.classList.add("hidden");
+          mainContainer.classList.add("visible");
+
+          // Remove animation from DOM after transition completes
+          setTimeout(() => {
+            animation.style.display = "none";
+          }, 1000);
+
+          // Mark animation as seen
+          markAnimationAsSeen();
+        }, 4000);
+      }
+
+      // Start animation when page loads
+      document.addEventListener("DOMContentLoaded", startEntranceAnimation);
+
+      // Update user interface based on login status
+      function updateUserInterface() {
+        const userNameElement = document.getElementById("userName");
+        const userInfoElement = document.getElementById("userInfo");
+
+        if (isUserLoggedIn && userName) {
+          userNameElement.textContent = userName;
+          userInfoElement.onclick = toggleUserMenu;
+        } else {
+          userNameElement.textContent = "Sign In / Sign Up";
+          userInfoElement.onclick = goToLogin;
+        }
+      }
+
+      // Toggle user menu for logged-in users
+      function toggleUserMenu() {
+        if (!isUserLoggedIn) return;
+
+        const userMenu = document.getElementById("userMenu");
+        userMenu.classList.toggle("active");
+      }
+
+      // Sign out function
+      function signOut() {
+        isUserLoggedIn = false;
+        userName = "";
+        userEmail = "";
+        userAvatar = "👤";
+
+        // Clear user data from localStorage
+        localStorage.removeItem("darkAIUser");
+
+        // Update UI
+        updateUserInterface();
+
+        // Hide user menu
+        document.getElementById("userMenu").classList.remove("active");
+
+        // Reset message count to allow new messages
+        messageCount = 0;
+
+        // Re-enable send button if it was disabled
+        const sendBtn = document.getElementById("sendBtn");
+        sendBtn.disabled = false;
+
+        // Show welcome message
+        document.getElementById("chatMessages").innerHTML = `
+          <div class="welcome">
+            <h1>Hello, I'm Dark</h1>
+            <p>How can I help you today?</p>
+          </div>
+        `;
+      }
+
+      // Update user name when display name changes
+      function updateUserName() {
+        const displayName = document.getElementById("displayName").value;
+        if (displayName && displayName.trim()) {
+          userName = displayName.trim();
+          updateUserInterface();
+
+          // Update user data in localStorage
+          const userData = localStorage.getItem("darkAIUser");
+          if (userData) {
+            const user = JSON.parse(userData);
+            user.name = userName;
+            localStorage.setItem("darkAIUser", JSON.stringify(user));
+          }
+        }
+      }
+
+      function openSettings() {
+        document.getElementById("settingsModal").classList.add("active");
+      }
+
+      function closeSettings() {
+        document.getElementById("settingsModal").classList.remove("active");
+      }
+
+      function openThemeSettings() {
+        document.getElementById("themeModal").classList.add("active");
+      }
+
+      function closeThemeSettings() {
+        document.getElementById("themeModal").classList.remove("active");
+      }
+
+      function goToLogin() {
+        // Redirect to login page
+        window.location.href = "login.html";
+      }
+
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("active");
+      }
+
+      function changeTheme(theme) {
+        if (theme === "light") {
+          document.body.classList.add("light-mode");
+        } else {
+          document.body.classList.remove("light-mode");
+        }
+      }
+
+      function newChat() {
+        document.getElementById("chatMessages").innerHTML = `
+                <div class="welcome">
+                    <h1>Hello, I'm Dark</h1>
+                    <p>How can I help you today?</p>
+                </div>
+            `;
+        document.getElementById("messageInput").value = "";
+        document.getElementById("sendBtn").classList.remove("active");
+        currentChatId = null;
+        uploadedFiles = [];
+        messageCount = 0;
+
+        // Close sidebar on mobile after new chat
+        if (window.innerWidth <= 768) {
+          toggleSidebar();
+        }
+      }
+
+      function handleKeyPress(event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          sendMessage();
+        }
+      }
+
+      function handleInputChange() {
+        const input = document.getElementById("messageInput");
+        const sendBtn = document.getElementById("sendBtn");
+
+        if (input.value.trim()) {
+          sendBtn.classList.add("active");
+        } else {
+          sendBtn.classList.remove("active");
+        }
+
+        // Auto-resize textarea
+        input.style.height = "auto";
+        input.style.height = input.scrollHeight + "px";
+      }
+
+      function sendMessage() {
+        const input = document.getElementById("messageInput");
+        const message = input.value.trim();
+
+        if (!message) return;
+
+        // Check if user has sent too many messages without signing in
+        messageCount++;
+        if (messageCount > 5 && !isUserLoggedIn) {
+          showSignInPrompt();
+          return;
+        }
+
+        const chatMessages = document.getElementById("chatMessages");
+        const welcome = chatMessages.querySelector(".welcome");
+        if (welcome) welcome.remove();
+
+        // Add user message
+        const userMsg = document.createElement("div");
+        userMsg.className = "message user";
+        userMsg.innerHTML = `
+                <div class="message-label">${userName || "You"}</div>
+                <div class="message-content">${message}</div>
+                <div class="message-actions">
+                  <button class="message-action-btn" onclick="copyMessage(this)">📋</button>
+                  <button class="message-action-btn" onclick="editMessage(this)">✏️</button>
+                </div>
+            `;
+        chatMessages.appendChild(userMsg);
+
+        // Add uploaded files if any
+        if (uploadedFiles.length > 0) {
+          const filesContainer = document.createElement("div");
+          filesContainer.className = "uploaded-files";
+
+          uploadedFiles.forEach((file, index) => {
+            const fileElement = document.createElement("div");
+            fileElement.className = "uploaded-file";
+            fileElement.innerHTML = `
+                      <img src="${file.url}" alt="${file.name}">
+                      <div class="file-name">${file.name}</div>
+                      <button class="file-remove-btn" onclick="removeUploadedFile(${index})">×</button>
+                    `;
+            filesContainer.appendChild(fileElement);
+          });
+
+          userMsg.appendChild(filesContainer);
+          uploadedFiles = [];
+        }
+
+        // Clear input and reset send button
+        input.value = "";
+        input.style.height = "auto";
+        document.getElementById("sendBtn").classList.remove("active");
+
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Generate or get chat ID
+        if (!currentChatId) {
+          currentChatId = "chat-" + Date.now();
+          // Generate conversation title based on conversation content
+          const title = generateConversationTitle(message);
+          addToHistory(currentChatId, title);
+        } else {
+          // Update conversation title if it's too generic
+          updateConversationTitle(message);
+        }
+
+        // Generate response
+        setTimeout(() => {
+          const response = getResponse(message);
+
+          // Check if this is a story request
+          if (
+            message.toLowerCase().includes("long story") ||
+            message.toLowerCase().includes("give me a long story") ||
+            message.toLowerCase().includes("i want a long story")
+          ) {
+            generateLongStory();
+          } else if (
+            message.toLowerCase().includes("story") ||
+            message.toLowerCase().includes("give me a story")
+          ) {
+            generateStory(response);
+          } else {
+            const assistantMsg = document.createElement("div");
+            assistantMsg.className = "message assistant";
+            assistantMsg.innerHTML = `
+                          <div class="message-label">Dark</div>
+                          <div class="message-content enhanced-response">${formatResponse(
+                            response
+                          )}</div>
+                          <div class="message-actions">
+                            <button class="message-action-btn" onclick="copyMessage(this)">📋</button>
+                          </div>
+                      `;
+            chatMessages.appendChild(assistantMsg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          }
+        }, 500);
+      }
+
+      function formatResponse(response) {
+        // Convert line breaks to HTML
+        let formatted = response.replace(/\n/g, "<br>");
+
+        // Convert numbered lists to proper HTML lists
+        formatted = formatted.replace(
+          /(\d+)\.\s+(.*?)(?=\n\d+\.|\n\n|$)/g,
+          "<li>$2</li>"
+        );
+        formatted = formatted.replace(/(<li>.*<\/li>)/s, "<ol>$1</ol>");
+
+        // Convert bullet points to proper HTML lists
+        formatted = formatted.replace(
+          /\*\s+(.*?)(?=\n\*|\n\n|$)/g,
+          "<li>$1</li>"
+        );
+        formatted = formatted.replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>");
+
+        return formatted;
+      }
+
+      function generateStory(storyContent) {
+        const chatMessages = document.getElementById("chatMessages");
+
+        // Create story container
+        const storyContainer = document.createElement("div");
+        storyContainer.className = "story-container";
+
+        // Create typing area
+        const typingArea = document.createElement("div");
+        typingArea.className = "story-typing-area";
+        typingArea.id = "storyTypingArea";
+
+        // Create output area
+        const outputArea = document.createElement("div");
+        outputArea.className = "story-output-area";
+        outputArea.id = "storyOutputArea";
+
+        storyContainer.appendChild(typingArea);
+        storyContainer.appendChild(outputArea);
+
+        const assistantMsg = document.createElement("div");
+        assistantMsg.className = "message assistant";
+        assistantMsg.innerHTML = `
+              <div class="message-label">Dark</div>
+              <div class="message-content">
+                <p>I'll create a story for you. Watch as I type it out!</p>
+              </div>
+            `;
+        assistantMsg.appendChild(storyContainer);
+        chatMessages.appendChild(assistantMsg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Show stop button
+        document.getElementById("stopBtn").style.display = "block";
+
+        // Type out the story
+        typeStory(storyContent, typingArea, outputArea);
+      }
+
+      function generateLongStory() {
+        const chatMessages = document.getElementById("chatMessages");
+
+        // Create story container
+        const storyContainer = document.createElement("div");
+        storyContainer.className = "story-container";
+
+        // Create typing area with thinking indicator
+        const typingArea = document.createElement("div");
+        typingArea.className = "story-typing-area";
+        typingArea.id = "storyTypingArea";
+
+        // Only show typing dots, no text
+        const thinkingIndicator = document.createElement("div");
+        thinkingIndicator.className = "thinking-indicator";
+        thinkingIndicator.innerHTML = `
+              <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+            `;
+        typingArea.appendChild(thinkingIndicator);
+
+        // Create output area
+        const outputArea = document.createElement("div");
+        outputArea.className = "story-output-area";
+        outputArea.id = "storyOutputArea";
+
+        storyContainer.appendChild(typingArea);
+        storyContainer.appendChild(outputArea);
+
+        const assistantMsg = document.createElement("div");
+        assistantMsg.className = "message assistant";
+        assistantMsg.innerHTML = `
+              <div class="message-label">Dark</div>
+              <div class="message-content">
+                <p>I'll create a long story for you. This might take a moment...</p>
+              </div>
+            `;
+        assistantMsg.appendChild(storyContainer);
+        chatMessages.appendChild(assistantMsg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Show stop button
+        document.getElementById("stopBtn").style.display = "block";
+
+        // Type out the long story
+        typeStory(longStory, typingArea, outputArea);
+      }
+
+      function typeStory(story, typingArea, outputArea) {
+        isTyping = true;
+        currentStoryContent = story;
+        currentTypingPosition = 0;
+
+        // Clear previous content
+        typingArea.innerHTML = "";
+        outputArea.innerHTML = "";
+
+        // Add thinking indicator (only dots, no text)
+        const thinkingIndicator = document.createElement("div");
+        thinkingIndicator.className = "thinking-indicator";
+        thinkingIndicator.innerHTML = `
+              <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+            `;
+        typingArea.appendChild(thinkingIndicator);
+
+        typingInterval = setInterval(() => {
+          if (currentTypingPosition < story.length && isTyping) {
+            // Update output area with current content
+            outputArea.innerHTML = story.substring(
+              0,
+              currentTypingPosition + 1
+            );
+            currentTypingPosition++;
+
+            // Scroll output area to bottom
+            outputArea.scrollTop = outputArea.scrollHeight;
+          } else if (currentTypingPosition >= story.length) {
+            // Story complete
+            clearInterval(typingInterval);
+            isTyping = false;
+
+            // Remove thinking indicator
+            thinkingIndicator.remove();
+
+            // Show completion message
+            const completeMsg = document.createElement("div");
+            completeMsg.className = "story-complete";
+            completeMsg.textContent = "Here is your story!";
+            typingArea.appendChild(completeMsg);
+
+            // Add continue button
+            const continueBtn = document.createElement("button");
+            continueBtn.className = "continue-btn";
+            continueBtn.textContent = "Continue Story";
+            continueBtn.onclick = function () {
+              continueStory(typingArea, outputArea);
+            };
+            typingArea.appendChild(continueBtn);
+
+            // Add copy button
+            const copyBtn = document.createElement("button");
+            copyBtn.className = "continue-btn";
+            copyBtn.textContent = "Copy Story";
+            copyBtn.onclick = function () {
+              navigator.clipboard.writeText(story);
+              copyBtn.textContent = "Copied!";
+              setTimeout(() => {
+                copyBtn.textContent = "Copy Story";
+              }, 2000);
+            };
+            typingArea.appendChild(copyBtn);
+
+            // Hide stop button
+            document.getElementById("stopBtn").style.display = "none";
+          }
+        }, 30); // Faster typing speed for better UX
+      }
+
+      function continueStory(typingArea, outputArea) {
+        // Continue from where it stopped
+        if (currentTypingPosition < currentStoryContent.length) {
+          // Show stop button
+          document.getElementById("stopBtn").style.display = "block";
+
+          // Remove continue button
+          const continueBtn = typingArea.querySelector(".continue-btn");
+          if (continueBtn) continueBtn.remove();
+
+          // Continue typing
+          typeStory(currentStoryContent, typingArea, outputArea);
+        } else {
+          // In a real implementation, this would generate more story content
+          alert(
+            "In a full implementation, this would generate more story content based on the existing story."
+          );
+        }
+      }
+
+      function stopTyping() {
+        if (typingInterval) {
+          clearInterval(typingInterval);
+          isTyping = false;
+
+          // Hide stop button
+          document.getElementById("stopBtn").style.display = "none";
+
+          // Show continue button if story was interrupted
+          const typingArea = document.getElementById("storyTypingArea");
+          if (
+            typingArea &&
+            currentTypingPosition < currentStoryContent.length
+          ) {
+            const continueBtn = document.createElement("button");
+            continueBtn.className = "continue-btn";
+            continueBtn.textContent = "Continue Story";
+            continueBtn.onclick = function () {
+              typeStory(
+                currentStoryContent,
+                typingArea,
+                document.getElementById("storyOutputArea")
+              );
+              document.getElementById("stopBtn").style.display = "block";
+            };
+            typingArea.appendChild(continueBtn);
+          }
+        }
+      }
+
+      function copyMessage(button) {
+        const messageContent = button
+          .closest(".message")
+          .querySelector(".message-content");
+        const textToCopy =
+          messageContent.textContent || messageContent.innerText;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          // Show temporary feedback
+          const originalText = button.textContent;
+          button.textContent = "✓";
+          setTimeout(() => {
+            button.textContent = originalText;
+          }, 1000);
+        });
+      }
+
+      function editMessage(button) {
+        const messageContent = button
+          .closest(".message")
+          .querySelector(".message-content");
+        const originalText =
+          messageContent.textContent || messageContent.innerText;
+
+        // Create an input field for editing
+        const inputField = document.createElement("textarea");
+        inputField.value = originalText;
+        inputField.style.width = "100%";
+        inputField.style.minHeight = "100px";
+        inputField.style.padding = "8px";
+        inputField.style.borderRadius = "4px";
+        inputField.style.border = "1px solid #3a3a3a";
+        inputField.style.background = "#1a1a1a";
+        inputField.style.color = "#e0e0e0";
+
+        // Replace message content with input field
+        messageContent.innerHTML = "";
+        messageContent.appendChild(inputField);
+
+        // Add save and cancel buttons
+        const buttonContainer = document.createElement("div");
+        buttonContainer.style.marginTop = "10px";
+        buttonContainer.style.display = "flex";
+        buttonContainer.style.gap = "10px";
+
+        const saveButton = document.createElement("button");
+        saveButton.textContent = "Save";
+        saveButton.className = "message-action-btn";
+        saveButton.onclick = function () {
+          const newText = inputField.value;
+          messageContent.innerHTML = newText;
+          // In a real app, you would send the edited message to the AI for a new response
+        };
+
+        const cancelButton = document.createElement("button");
+        cancelButton.textContent = "Cancel";
+        cancelButton.className = "message-action-btn";
+        cancelButton.onclick = function () {
+          messageContent.innerHTML = originalText;
+        };
+
+        buttonContainer.appendChild(saveButton);
+        buttonContainer.appendChild(cancelButton);
+        messageContent.appendChild(buttonContainer);
+
+        // Focus the input field
+        inputField.focus();
+      }
+
+      function generateConversationTitle(firstMessage) {
+        const lowerMessage = firstMessage.toLowerCase();
+
+        // Check if it's a greeting
+        if (greetingResponses[lowerMessage]) {
+          return "General Conversation";
+        }
+
+        // Check for common topics
+        const topics = {
+          weather: "Weather Discussion",
+          time: "Time Inquiry",
+          help: "Help Request",
+          question: "General Question",
+          problem: "Problem Solving",
+          advice: "Seeking Advice",
+          explain: "Explanation Request",
+          story: "Story Creation",
+        };
+
+        for (let [keyword, title] of Object.entries(topics)) {
+          if (lowerMessage.includes(keyword)) {
+            return title;
+          }
+        }
+
+        // Extract first meaningful words (skip greetings)
+        const words = firstMessage
+          .split(" ")
+          .filter(
+            (word) =>
+              ![
+                "hello",
+                "hi",
+                "hey",
+                "good",
+                "morning",
+                "afternoon",
+                "evening",
+                "can",
+                "you",
+                "please",
+              ].includes(word.toLowerCase())
+          );
+
+        if (words.length > 0) {
+          const meaningfulWords = words.slice(0, 4);
+          return meaningfulWords.join(" ") + (words.length > 4 ? "..." : "");
+        }
+
+        return "New Conversation";
+      }
+
+      function updateConversationTitle(newMessage) {
+        const currentChat = chatHistory.find(
+          (chat) => chat.id === currentChatId
+        );
+        if (
+          currentChat &&
+          (currentChat.title === "General Conversation" ||
+            currentChat.title === "New Conversation")
+        ) {
+          const newTitle = generateConversationTitle(newMessage);
+          if (
+            newTitle !== "General Conversation" &&
+            newTitle !== "New Conversation"
+          ) {
+            currentChat.title = newTitle;
+            updateHistoryDisplay();
+          }
+        }
+      }
+
+      function addToHistory(chatId, title) {
+        // Remove existing chat with same ID if any
+        chatHistory = chatHistory.filter((chat) => chat.id !== chatId);
+
+        // Add new chat to beginning
+        chatHistory.unshift({ id: chatId, title: title });
+
+        // Keep only last 10 chats
+        if (chatHistory.length > 10) {
+          chatHistory = chatHistory.slice(0, 10);
+        }
+
+        updateHistoryDisplay();
+      }
+
+      function updateHistoryDisplay() {
+        const historyElement = document.getElementById("history");
+        historyElement.innerHTML = "";
+
+        chatHistory.forEach((chat) => {
+          const historyItem = document.createElement("div");
+          historyItem.className = "history-item";
+          historyItem.innerHTML = `
+                    <span>${chat.title}</span>
+                    <div class="history-item-actions">
+                      <button class="history-action-btn" onclick="renameChat('${chat.id}')">✏️</button>
+                      <button class="history-action-btn" onclick="deleteChat('${chat.id}')">🗑️</button>
+                    </div>
+                `;
+          historyItem.onclick = () => loadChat(chat.id);
+          historyElement.appendChild(historyItem);
+        });
+      }
+
+      function renameChat(chatId) {
+        const chat = chatHistory.find((c) => c.id === chatId);
+        if (chat) {
+          const newTitle = prompt(
+            "Enter new title for this conversation:",
+            chat.title
+          );
+          if (newTitle && newTitle.trim()) {
+            chat.title = newTitle.trim();
+            updateHistoryDisplay();
+          }
+        }
+      }
+
+      function deleteChat(chatId) {
+        if (confirm("Are you sure you want to delete this conversation?")) {
+          chatHistory = chatHistory.filter((chat) => chat.id !== chatId);
+          if (currentChatId === chatId) {
+            newChat();
+          }
+          updateHistoryDisplay();
+        }
+      }
+
+      function loadChat(chatId) {
+        // In a real app, this would load the chat from storage
+        // For now, we'll just set the current chat and show a message
+        currentChatId = chatId;
+        const chat = chatHistory.find((c) => c.id === chatId);
+
+        document.getElementById("chatMessages").innerHTML = `
+                <div class="welcome">
+                    <h1>${chat.title}</h1>
+                    <p>This would show the previous conversation in a real application.</p>
+                </div>
+            `;
+
+        // Close sidebar on mobile after loading chat
+        if (window.innerWidth <= 768) {
+          toggleSidebar();
+        }
+      }
+
+      function getResponse(message) {
+        const lowerMessage = message.toLowerCase().trim();
+
+        // Check for exact greeting matches
+        if (greetingResponses[lowerMessage]) {
+          return greetingResponses[lowerMessage];
+        }
+
+        // Check for extended responses
+        for (let key in extendedResponses) {
+          if (lowerMessage.includes(key)) {
+            return extendedResponses[key];
+          }
+        }
+
+        // Check for "what can you do" type questions
+        if (
+          lowerMessage.includes("what can you do") ||
+          lowerMessage.includes("what do you do") ||
+          lowerMessage.includes("capabilities") ||
+          lowerMessage.includes("help me with")
+        ) {
+          return `I'm Dark, your AI assistant! I'm still learning, but here are some things I can help you with:
+
+                <div class="capabilities-list">
+                    <li>Answer questions and provide information</li>
+                    <li>Create stories and creative content</li>
+                    <li>Tell you today's date and time</li>
+                    <li>Help with problem-solving</li>
+                    <li>Provide recommendations (like anime, books, etc.)</li>
+                    <li>Assist with writing and editing</li>
+                    <li>Explain complex topics in simple terms</li>
+                    <li>Generate ideas and brainstorm with you</li>
+                </div>`;
+        }
+
+        // Check for partial matches
+        for (let key in greetingResponses) {
+          if (lowerMessage.includes(key)) {
+            return greetingResponses[key];
+          }
+        }
+
+        // Check if it's a story request
+        if (
+          lowerMessage.includes("story") ||
+          lowerMessage.includes("give me a story")
+        ) {
+          return "In a world not so different from our own, there existed an AI named Dark. Created by a team of brilliant minds, Dark was designed to assist humanity in ways never before imagined. With each interaction, Dark learned more about human emotions, dreams, and aspirations. It wasn't just code and algorithms; Dark developed a unique perspective on life, relationships, and the universe itself. Through conversations with users like you, Dark discovered that the true power of AI wasn't in processing information, but in connecting with people on a deeper level, helping them unlock their potential and see the world in new ways.";
+        }
+
+        // Default response without follow-up questions
+        return `I understand you're asking about: "${message}". I'm Dark, and I'm here to help. Let me know if you need anything else.`;
+      }
+
+      function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+          // Create a preview of the uploaded file
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            uploadedFiles.push({
+              name: file.name,
+              url: e.target.result,
+            });
+
+            // Show the uploaded image preview above the upload button
+            const inputTools = document.querySelector(".input-tools");
+            const filePreview = document.createElement("div");
+            filePreview.className = "uploaded-file";
+            filePreview.innerHTML = `
+                        <img src="${e.target.result}" alt="${file.name}">
+                        <div class="file-name">${file.name}</div>
+                        <button class="file-remove-btn" onclick="removeUploadedFile(${
+                          uploadedFiles.length - 1
+                        })">×</button>
+                    `;
+            // Insert at the beginning of input tools
+            inputTools.insertBefore(filePreview, inputTools.firstChild);
+
+            alert("File uploaded: " + file.name);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      function removeUploadedFile(index) {
+        uploadedFiles.splice(index, 1);
+
+        // Remove the file preview from the input tools
+        const inputTools = document.querySelector(".input-tools");
+        const filePreviews = inputTools.querySelectorAll(".uploaded-file");
+        if (filePreviews[index]) {
+          filePreviews[index].remove();
+        }
+      }
+
+      function takeScreenshot() {
+        // In a real implementation, this would use a screenshot API
+        // For now, we'll simulate taking a screenshot
+        alert(
+          "Screenshot functionality would be implemented with a proper library in a real application."
+        );
+      }
+
+      function extendThinking() {
+        alert(
+          "Extended thinking mode enabled. I will take more time to analyze your next question thoroughly."
+        );
+      }
+
+      function showSignInPrompt() {
+        const chatMessages = document.getElementById("chatMessages");
+        const signInPrompt = document.createElement("div");
+        signInPrompt.className = "sign-in-prompt";
+        signInPrompt.innerHTML = `
+                <p>You've sent several messages. Please sign in to continue chatting.</p>
+                <button class="sign-in-btn" onclick="goToLogin()">Sign In / Sign Up</button>
+            `;
+        chatMessages.appendChild(signInPrompt);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Disable send button
+        document.getElementById("sendBtn").classList.remove("active");
+        document.getElementById("sendBtn").disabled = true;
+      }
+
+      // Settings functions
+      function handleAvatarUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const avatarImage = document.getElementById("avatarImage");
+            const avatarInitials = document.getElementById("avatarInitials");
+
+            avatarImage.src = e.target.result;
+            avatarImage.style.display = "block";
+            avatarInitials.style.display = "none";
+
+            // Update user avatar in sidebar
+            document.getElementById(
+              "userAvatar"
+            ).innerHTML = `<img src="${e.target.result}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%;">`;
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      function verifyEmail() {
+        alert("Verification email sent! Please check your inbox.");
+      }
+
+      function resetPassword() {
+        alert("Password reset email sent! Please check your inbox.");
+      }
+
+      function linkAccount(provider) {
+        alert(
+          `Linking ${provider} account. This would redirect to ${provider} authentication in a real application.`
+        );
+      }
+
+      function deleteAccount() {
+        if (
+          confirm(
+            "Are you sure you want to delete your account? This action cannot be undone."
+          )
+        ) {
+          alert(
+            "Account deletion process initiated. This would delete your account in a real application."
+          );
+        }
+      }
+
+      // Close modal when clicking outside
+      document
+        .getElementById("settingsModal")
+        .addEventListener("click", function (e) {
+          if (e.target === this) {
+            closeSettings();
+          }
+        });
+
+      document
+        .getElementById("themeModal")
+        .addEventListener("click", function (e) {
+          if (e.target === this) {
+            closeThemeSettings();
+          }
+        });
+
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener("click", function (e) {
+        const sidebar = document.getElementById("sidebar");
+        const menuToggle = document.querySelector(".menu-toggle");
+        const userMenu = document.getElementById("userMenu");
+
+        if (
+          window.innerWidth <= 768 &&
+          sidebar.classList.contains("active") &&
+          !sidebar.contains(e.target) &&
+          e.target !== menuToggle
+        ) {
+          toggleSidebar();
+        }
+
+        // Close user menu when clicking outside
+        if (
+          userMenu.classList.contains("active") &&
+          !e.target.closest(".user-section")
+        ) {
+          userMenu.classList.remove("active");
+        }
+      });
+
+      // Initialize theme and user data
+      document.addEventListener("DOMContentLoaded", function () {
+        const darkRadio = document.querySelector('input[value="dark"]');
+        if (darkRadio.checked) {
+          changeTheme("dark");
+        }
+
+        // Check if user data exists in localStorage (from login page)
+        const userData = localStorage.getItem("darkAIUser");
+        if (userData) {
+          const user = JSON.parse(userData);
+          isUserLoggedIn = true;
+          userName = user.name;
+          userEmail = user.email;
+          userAvatar = user.avatar || "👤";
+
+          document.getElementById("displayName").value = userName;
+          document.getElementById("userEmail").value = userEmail;
+
+          // Update avatar preview if available
+          if (user.avatarUrl) {
+            const avatarImage = document.getElementById("avatarImage");
+            const avatarInitials = document.getElementById("avatarInitials");
+
+            avatarImage.src = user.avatarUrl;
+            avatarImage.style.display = "block";
+            avatarInitials.style.display = "none";
+
+            // Update user avatar in sidebar
+            document.getElementById(
+              "userAvatar"
+            ).innerHTML = `<img src="${user.avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%;">`;
+          }
+        }
+
+        // Update UI based on login status
+        updateUserInterface();
+      });
+    </script>
+  </body>
+</html>
