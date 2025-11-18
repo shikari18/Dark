@@ -380,7 +380,7 @@
 
       .user-menu {
         position: absolute;
-        bottom: 100%;
+        bottom: 110%; /* MOVED UP - was 100% */
         left: 0;
         width: 100%;
         background: #2a2a2a;
@@ -893,6 +893,7 @@
         border: 1px solid #3a3a3a;
         transition: background 0.3s, border-color 0.3s;
         position: relative;
+        margin-top: 40px; /* MOVED DOWN - added margin-top */
       }
 
       body.light-mode .modal-content {
@@ -1261,7 +1262,7 @@
         /* ADJUST CHAT MESSAGES FOR MOBILE */
         .chat-messages {
           padding: 12px;
-          padding-bottom: 120px; /* Increased from default - adjust this value to move input higher */
+          padding-bottom: 100px; /* MOVED UP 20px - was 120px */
           max-height: calc(100vh - 140px);
           overflow-y: auto;
         }
@@ -1291,9 +1292,9 @@
           padding: 3px 6px;
         }
 
-        /* ADJUST INPUT AREA PADDING - Reduce to move input higher */
+        /* ADJUST INPUT AREA PADDING - Reduced to move input higher */
         .input-area {
-          padding: 8px 12px 12px; /* Reduced padding - adjust these values to move input higher */
+          padding: 6px 12px 10px; /* MOVED UP - reduced top and bottom padding */
           position: relative;
           z-index: 10;
         }
@@ -1358,17 +1359,22 @@
           width: 80px;
           height: 80px;
         }
+
+        /* Settings modal adjustment for mobile */
+        .modal-content {
+          margin-top: 20px; /* MOVED DOWN - smaller margin on mobile */
+        }
       }
 
       /* iPhone 5 and other very small screens */
       @media (max-width: 375px) and (max-height: 667px) {
         .chat-messages {
           padding: 10px;
-          padding-bottom: 100px; /* Adjusted for iPhone 5 */
+          padding-bottom: 80px; /* Adjusted for iPhone 5 - MOVED UP */
         }
 
         .input-area {
-          padding: 6px 10px 10px; /* Further reduced for iPhone 5 */
+          padding: 4px 10px 8px; /* Further reduced for iPhone 5 - MOVED UP */
         }
 
         .tool-btn {
@@ -1401,6 +1407,11 @@
         .welcome p {
           font-size: 14px;
         }
+
+        /* User menu adjustment for very small screens */
+        .user-menu {
+          bottom: 105%; /* MOVED UP - smaller adjustment for very small screens */
+        }
       }
 
       @media (max-width: 480px) {
@@ -1419,11 +1430,11 @@
 
         /* ADJUST FOR VERY SMALL SCREENS - Increase to move input even higher */
         .chat-messages {
-          padding-bottom: 130px; /* Increased for very small screens - adjust this value */
+          padding-bottom: 110px; /* MOVED UP - was 130px */
         }
 
         .input-area {
-          padding: 8px 10px 10px; /* Further reduced padding - adjust these values */
+          padding: 6px 10px 8px; /* MOVED UP - further reduced padding */
         }
       }
 
@@ -1839,6 +1850,8 @@
     </div>
 
     <script>
+      // All JavaScript code remains exactly the same as in the previous version
+      // Only the CSS has been modified for the positioning adjustments
       const greetingResponses = {
         hello: "Hello! How can I assist you today?",
         hi: "Hi there! What can I help you with?",
